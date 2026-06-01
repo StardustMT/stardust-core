@@ -66,8 +66,8 @@ mod tests {
 
     #[test]
     fn cross_thread_drain_preserves_order() {
-        use std::sync::atomic::{AtomicBool, Ordering};
         use std::sync::Arc;
+        use std::sync::atomic::{AtomicBool, Ordering};
 
         let (mut p, mut c) = RingBuffer::<u32>::new(2048);
         let done = Arc::new(AtomicBool::new(false));

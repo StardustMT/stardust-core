@@ -26,18 +26,18 @@
 //! cargo run -p stardust-poc --bin stardust-poc-host-clap
 //! ```
 
-use anyhow::{anyhow, Result};
-use stardust_audio::{list_outputs, open_default_output, open_output, AudioSpec};
-use stardust_midi::{list_inputs, open_input, MidiMessage};
+use anyhow::{Result, anyhow};
+use stardust_audio::{AudioSpec, list_outputs, open_default_output, open_output};
+use stardust_midi::{MidiMessage, list_inputs, open_input};
 use stardust_plugin::clap::{
-    default_clap_search_paths, host_info, scan_paths, AudioPortBuffer, AudioPortBufferType,
-    AudioPorts, EventBuffer, InputChannel, InputEvents, NoteOffEvent, NoteOnEvent, OutputEvents,
-    Pckn, PluginAudioConfiguration, PluginEntry, PluginInstance, StardustHost, MidiEvent,
+    AudioPortBuffer, AudioPortBufferType, AudioPorts, EventBuffer, InputChannel, MidiEvent,
+    NoteOffEvent, NoteOnEvent, Pckn, PluginAudioConfiguration, PluginEntry, PluginInstance,
+    StardustHost, default_clap_search_paths, host_info, scan_paths,
 };
 use stardust_rt::RingBuffer;
 use std::io::{self, BufRead, Write};
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 const SAMPLE_RATE: f32 = 48_000.0;
@@ -219,9 +219,9 @@ fn main() -> Result<()> {
             let mut iter = [&mut input_l[..frames], &mut input_r[..frames]].into_iter();
             input_ports.with_input_buffers([AudioPortBuffer {
                 latency: 0,
-                channels: AudioPortBufferType::f32_input_only(
-                    std::iter::from_fn(move || iter.next().map(InputChannel::constant)),
-                ),
+                channels: AudioPortBufferType::f32_input_only(std::iter::from_fn(move || {
+                    iter.next().map(InputChannel::constant)
+                })),
             }])
         };
         let mut out_buffers = {
@@ -329,7 +329,11 @@ fn main() -> Result<()> {
 /// ignore them.
 fn push_midi_as_clap_events(buf: &mut EventBuffer, msg: MidiMessage) {
     match msg {
-        MidiMessage::NoteOn { channel, note, velocity } => {
+        MidiMessage::NoteOn {
+            channel,
+            note,
+            velocity,
+        } => {
             let event = NoteOnEvent::new(
                 0,
                 Pckn::new(0u16, channel as u16, note as u16, u32::MAX),
@@ -337,7 +341,11 @@ fn push_midi_as_clap_events(buf: &mut EventBuffer, msg: MidiMessage) {
             );
             buf.push(&event);
         }
-        MidiMessage::NoteOff { channel, note, velocity } => {
+        MidiMessage::NoteOff {
+            channel,
+            note,
+            velocity,
+        } => {
             let event = NoteOffEvent::new(
                 0,
                 Pckn::new(0u16, channel as u16, note as u16, u32::MAX),
@@ -374,9 +382,11 @@ fn midi_message_to_bytes(msg: MidiMessage) -> Option<[u8; 3]> {
         MidiMessage::ChannelPressure { channel, value } => {
             Some([0xD0 | (channel & 0x0F), value & 0x7F, 0])
         }
-        MidiMessage::PolyAftertouch { channel, note, value } => {
-            Some([0xA0 | (channel & 0x0F), note & 0x7F, value & 0x7F])
-        }
+        MidiMessage::PolyAftertouch {
+            channel,
+            note,
+            value,
+        } => Some([0xA0 | (channel & 0x0F), note & 0x7F, value & 0x7F]),
         MidiMessage::ProgramChange { channel, program } => {
             Some([0xC0 | (channel & 0x0F), program & 0x7F, 0])
         }

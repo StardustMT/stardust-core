@@ -226,7 +226,11 @@ struct Biquad {
 
 impl Biquad {
     fn with_coeffs(coeffs: BiquadCoeffs) -> Self {
-        Self { coeffs, z1: 0.0, z2: 0.0 }
+        Self {
+            coeffs,
+            z1: 0.0,
+            z2: 0.0,
+        }
     }
 
     #[inline]
@@ -269,7 +273,11 @@ mod tests {
         let mut flat = Eq::new(sr);
         let mut boost = Eq::with_gains(
             sr,
-            EqGains { low_db: 12.0, mid_db: 0.0, high_db: 0.0 },
+            EqGains {
+                low_db: 12.0,
+                mid_db: 0.0,
+                high_db: 0.0,
+            },
         );
         // 80 Hz sine — well below the 250 Hz shelf corner.
         let signal: Vec<f32> = (0..4800)
@@ -301,7 +309,11 @@ mod tests {
         let mut flat = Eq::new(sr);
         let mut cut = Eq::with_gains(
             sr,
-            EqGains { low_db: 0.0, mid_db: 0.0, high_db: -12.0 },
+            EqGains {
+                low_db: 0.0,
+                mid_db: 0.0,
+                high_db: -12.0,
+            },
         );
         // 10 kHz sine — well above the 4 kHz shelf corner.
         let signal: Vec<f32> = (0..4800)
@@ -333,7 +345,11 @@ mod tests {
         let mut r = vec![1.0f32; 64];
         eq.process(&mut l, &mut r);
         let z_before = eq.low_l.z1;
-        eq.set_gains(EqGains { low_db: 3.0, mid_db: 0.0, high_db: 0.0 });
+        eq.set_gains(EqGains {
+            low_db: 3.0,
+            mid_db: 0.0,
+            high_db: 0.0,
+        });
         // z-state is preserved verbatim; coefficients update but the filter
         // delay line carries over.
         assert_eq!(eq.low_l.z1, z_before);
@@ -344,10 +360,18 @@ mod tests {
     fn set_gains_idempotent() {
         let mut eq = Eq::with_gains(
             48_000.0,
-            EqGains { low_db: 3.0, mid_db: -2.0, high_db: 1.0 },
+            EqGains {
+                low_db: 3.0,
+                mid_db: -2.0,
+                high_db: 1.0,
+            },
         );
         let coeffs_before = eq.low_l.coeffs.b0;
-        eq.set_gains(EqGains { low_db: 3.0, mid_db: -2.0, high_db: 1.0 });
+        eq.set_gains(EqGains {
+            low_db: 3.0,
+            mid_db: -2.0,
+            high_db: 1.0,
+        });
         assert_eq!(eq.low_l.coeffs.b0, coeffs_before);
     }
 }

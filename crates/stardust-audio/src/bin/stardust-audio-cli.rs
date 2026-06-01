@@ -9,7 +9,7 @@
 //! Cross-platform: CoreAudio on macOS, WASAPI on Windows, ALSA on Linux.
 //! Plays a 440 Hz sine for 2 seconds on the selected device.
 
-use stardust_audio::{list_outputs, open_default_output, open_output, AudioSpec};
+use stardust_audio::{AudioSpec, list_outputs, open_default_output, open_output};
 use std::f32::consts::TAU;
 use std::io::{self, BufRead, Write};
 use std::time::Duration;

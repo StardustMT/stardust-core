@@ -23,11 +23,11 @@
 //! # Future: streaming
 //!
 //! For libraries that legitimately need GB of samples, a worker thread
-//! + per-voice `stardust_rt::RingBuffer` would let the audio thread pull
-//! samples on demand without locking. The current full-preload approach
-//! is the right starting point for a POC; the architectural seam lives
-//! at [`Sample`](crate::sample::Sample) — swapping it for a streaming
-//! type wouldn't touch the engine.
+//! and a per-voice `stardust_rt::RingBuffer` would let the audio thread
+//! pull samples on demand without locking. The current full-preload
+//! approach is the right starting point for a POC; the architectural
+//! seam lives at [`Sample`](crate::sample::Sample) — swapping it for a
+//! streaming type wouldn't touch the engine.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -49,8 +49,8 @@ pub struct LoadLimits {
 impl Default for LoadLimits {
     fn default() -> Self {
         Self {
-            max_sample_bytes: 64 * 1024 * 1024,    // 64 MiB
-            max_total_bytes: 512 * 1024 * 1024,    // 512 MiB
+            max_sample_bytes: 64 * 1024 * 1024, // 64 MiB
+            max_total_bytes: 512 * 1024 * 1024, // 512 MiB
         }
     }
 }
@@ -110,10 +110,7 @@ pub fn load_sfz(path: &Path) -> Result<LoadReport, std::io::Error> {
 }
 
 /// Same as [`load_sfz`] but with caller-supplied RAM limits.
-pub fn load_sfz_with_limits(
-    path: &Path,
-    limits: LoadLimits,
-) -> Result<LoadReport, std::io::Error> {
+pub fn load_sfz_with_limits(path: &Path, limits: LoadLimits) -> Result<LoadReport, std::io::Error> {
     load_sfz_with_progress(path, limits, |_| {})
 }
 
@@ -217,13 +214,10 @@ where
                 }
             }
         };
-        report
-            .instrument
-            .regions
-            .push(InstrumentRegion {
-                region,
-                sample_index,
-            });
+        report.instrument.regions.push(InstrumentRegion {
+            region,
+            sample_index,
+        });
     }
     report
 }

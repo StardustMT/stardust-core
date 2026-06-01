@@ -10,7 +10,7 @@ pub mod document;
 pub mod types;
 pub mod validate;
 
-pub use document::{Header, PatchDocument, CURRENT_SCHEMA_VERSION, PATCH_KIND};
+pub use document::{CURRENT_SCHEMA_VERSION, Header, PATCH_KIND, PatchDocument};
 pub use types::{
     CompositeBlock, CompositeId, GraphNode, NodeClass, NodeId, NodeKind, PatchGraph, Port,
     PortConfig, PortDirection, PortId, PromotedPort, SignalKind, StereoChannel, Wire, WireId,

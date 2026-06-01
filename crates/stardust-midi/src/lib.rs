@@ -166,9 +166,17 @@ impl MidiMessage {
             0x90 if bytes.len() >= 3 => {
                 let velocity = bytes[2] & 0x7F;
                 if velocity == 0 {
-                    Self::NoteOff { channel, note: bytes[1] & 0x7F, velocity: 0 }
+                    Self::NoteOff {
+                        channel,
+                        note: bytes[1] & 0x7F,
+                        velocity: 0,
+                    }
                 } else {
-                    Self::NoteOn { channel, note: bytes[1] & 0x7F, velocity }
+                    Self::NoteOn {
+                        channel,
+                        note: bytes[1] & 0x7F,
+                        velocity,
+                    }
                 }
             }
             0xA0 if bytes.len() >= 3 => Self::PolyAftertouch {
@@ -235,10 +243,7 @@ pub struct MidiInputHandle {
 /// Returns an error if the named port doesn't exist or the OS refuses to
 /// open it. SysEx is *not* filtered at this layer — the callback may see
 /// [`MidiMessage::Other`] for non-channel-voice traffic.
-pub fn open_input<F>(
-    port_name: &str,
-    mut callback: F,
-) -> Result<MidiInputHandle, MidiError>
+pub fn open_input<F>(port_name: &str, mut callback: F) -> Result<MidiInputHandle, MidiError>
 where
     F: FnMut(u64, MidiMessage) + Send + 'static,
 {
@@ -278,7 +283,11 @@ mod tests {
         let bytes = [0x90, 60, 100];
         assert_eq!(
             MidiMessage::parse(&bytes),
-            Some(MidiMessage::NoteOn { channel: 0, note: 60, velocity: 100 })
+            Some(MidiMessage::NoteOn {
+                channel: 0,
+                note: 60,
+                velocity: 100
+            })
         );
     }
 
@@ -287,7 +296,11 @@ mod tests {
         let bytes = [0x91, 60, 0];
         assert_eq!(
             MidiMessage::parse(&bytes),
-            Some(MidiMessage::NoteOff { channel: 1, note: 60, velocity: 0 })
+            Some(MidiMessage::NoteOff {
+                channel: 1,
+                note: 60,
+                velocity: 0
+            })
         );
     }
 
@@ -296,7 +309,11 @@ mod tests {
         let bytes = [0xB3, 64, 127];
         assert_eq!(
             MidiMessage::parse(&bytes),
-            Some(MidiMessage::ControlChange { channel: 3, cc: 64, value: 127 })
+            Some(MidiMessage::ControlChange {
+                channel: 3,
+                cc: 64,
+                value: 127
+            })
         );
     }
 
@@ -305,7 +322,10 @@ mod tests {
         let bytes = [0xE0, 0, 64]; // raw 8192 = center
         assert_eq!(
             MidiMessage::parse(&bytes),
-            Some(MidiMessage::PitchBend { channel: 0, value: 0 })
+            Some(MidiMessage::PitchBend {
+                channel: 0,
+                value: 0
+            })
         );
     }
 
@@ -313,11 +333,17 @@ mod tests {
     fn parses_pitch_bend_extremes() {
         assert_eq!(
             MidiMessage::parse(&[0xE0, 127, 127]),
-            Some(MidiMessage::PitchBend { channel: 0, value: 8191 })
+            Some(MidiMessage::PitchBend {
+                channel: 0,
+                value: 8191
+            })
         );
         assert_eq!(
             MidiMessage::parse(&[0xE0, 0, 0]),
-            Some(MidiMessage::PitchBend { channel: 0, value: -8192 })
+            Some(MidiMessage::PitchBend {
+                channel: 0,
+                value: -8192
+            })
         );
     }
 

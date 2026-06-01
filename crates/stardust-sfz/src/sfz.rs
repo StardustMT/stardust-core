@@ -117,10 +117,7 @@ impl Default for Region {
 impl Region {
     /// True if this region should sound for the given (key, velocity).
     pub fn matches(&self, key: u8, velocity: u8) -> bool {
-        key >= self.lokey
-            && key <= self.hikey
-            && velocity >= self.lovel
-            && velocity <= self.hivel
+        key >= self.lokey && key <= self.hikey && velocity >= self.lovel && velocity <= self.hivel
     }
 
     /// Combined pitch offset: transpose (semitones) + tune (cents).
@@ -237,7 +234,9 @@ impl SfzFile {
         }
         // Final region in the file.
         if current == Section::Region {
-            flush_region(&mut file, &control, &global, &master, &group, &region, base_dir);
+            flush_region(
+                &mut file, &control, &global, &master, &group, &region, base_dir,
+            );
         }
         file
     }
@@ -255,9 +254,8 @@ fn flush_region(
     region: &OpcodeMap,
     base_dir: &Path,
 ) {
-    let mut merged: OpcodeMap = HashMap::with_capacity(
-        global.len() + master.len() + group.len() + region.len(),
-    );
+    let mut merged: OpcodeMap =
+        HashMap::with_capacity(global.len() + master.len() + group.len() + region.len());
     for src in [global, master, group, region] {
         for (k, v) in src {
             merged.insert(k.clone(), v.clone());

@@ -15,13 +15,14 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use stardust_sfz::engine::Engine;
-use stardust_sfz::instrument::{load_sfz_with_progress, LoadLimits};
+use stardust_sfz::instrument::{LoadLimits, load_sfz_with_progress};
 
 fn main() -> anyhow::Result<()> {
     let mut args = env::args().skip(1);
-    let sfz_path = PathBuf::from(args.next().ok_or_else(|| {
-        anyhow::anyhow!("usage: render_to_wav <input.sfz> <output.wav>")
-    })?);
+    let sfz_path = PathBuf::from(
+        args.next()
+            .ok_or_else(|| anyhow::anyhow!("usage: render_to_wav <input.sfz> <output.wav>"))?,
+    );
     let out_path = PathBuf::from(args.next().unwrap_or_else(|| "out.wav".to_string()));
 
     println!("Reading + parsing {}", sfz_path.display());
@@ -30,7 +31,13 @@ fn main() -> anyhow::Result<()> {
         // Per-sample dot, with periodic "N/M" markers so the user
         // sees the loader is alive and roughly where it is.
         if p.index == 1 || p.index == p.total || p.index % 10 == 0 {
-            print!("\n  [{}/{}] {} MiB so far — {}", p.index, p.total, p.bytes_loaded / (1024 * 1024), p.path.display());
+            print!(
+                "\n  [{}/{}] {} MiB so far — {}",
+                p.index,
+                p.total,
+                p.bytes_loaded / (1024 * 1024),
+                p.path.display()
+            );
         } else {
             print!(".");
         }

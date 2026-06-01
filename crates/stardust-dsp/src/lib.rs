@@ -28,8 +28,8 @@ pub mod eq;
 pub use envelope::{AdsrConfig, EnvState, Envelope};
 pub use eq::{Eq, EqGains};
 
-use std::f32::consts::TAU;
 use stardust_midi::MidiMessage;
+use std::f32::consts::TAU;
 
 /// Master output gain. -12 dB leaves headroom when many voices stack.
 const MASTER_GAIN: f32 = 0.25;
@@ -289,7 +289,10 @@ mod tests {
             .iter()
             .map(|s| s.abs())
             .fold(0.0f32, f32::max);
-        assert!(tail_peak < 1e-6, "expected silence after release, got {tail_peak}");
+        assert!(
+            tail_peak < 1e-6,
+            "expected silence after release, got {tail_peak}"
+        );
     }
 
     #[test]
@@ -318,17 +321,32 @@ mod tests {
     #[test]
     fn process_midi_dispatches_note_on_off() {
         let mut s = new_synth();
-        s.process_midi(MidiMessage::NoteOn { channel: 0, note: 60, velocity: 100 });
+        s.process_midi(MidiMessage::NoteOn {
+            channel: 0,
+            note: 60,
+            velocity: 100,
+        });
         assert_eq!(s.active_voice_count(), 1);
-        s.process_midi(MidiMessage::NoteOff { channel: 0, note: 60, velocity: 0 });
+        s.process_midi(MidiMessage::NoteOff {
+            channel: 0,
+            note: 60,
+            velocity: 0,
+        });
         assert!(s.voices.iter().any(|v| v.env.state() == EnvState::Released));
     }
 
     #[test]
     fn process_midi_ignores_cc_and_pitch_bend() {
         let mut s = new_synth();
-        s.process_midi(MidiMessage::ControlChange { channel: 0, cc: 1, value: 64 });
-        s.process_midi(MidiMessage::PitchBend { channel: 0, value: 1000 });
+        s.process_midi(MidiMessage::ControlChange {
+            channel: 0,
+            cc: 1,
+            value: 64,
+        });
+        s.process_midi(MidiMessage::PitchBend {
+            channel: 0,
+            value: 1000,
+        });
         assert_eq!(s.active_voice_count(), 0);
     }
 

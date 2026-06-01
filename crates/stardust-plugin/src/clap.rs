@@ -18,9 +18,9 @@ pub use clack_host::entry::PluginEntry;
 // need to actually instantiate + drive a plugin. Keeps the
 // stardust-plugin API surface coherent and lets callers stay off the
 // clack-host crate root directly.
+pub use clack_host::events::Pckn;
 pub use clack_host::events::event_types::{MidiEvent, NoteOffEvent, NoteOnEvent};
 pub use clack_host::events::io::{EventBuffer, InputEvents, OutputEvents};
-pub use clack_host::events::Pckn;
 pub use clack_host::plugin::PluginInstance;
 pub use clack_host::process::audio_buffers::{
     AudioPortBuffer, AudioPortBufferType, AudioPorts, InputChannel,
@@ -78,7 +78,6 @@ impl HostHandlers for StardustHost {
     type MainThread<'a> = ();
     type AudioProcessor<'a> = ();
 }
-
 
 // =============================================================================
 // Errors

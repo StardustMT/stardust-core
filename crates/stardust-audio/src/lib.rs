@@ -95,6 +95,12 @@ pub struct AudioOutputHandle {
 /// Enumerate available audio output devices on the default host.
 ///
 /// The default device (if any) is listed first with `is_default = true`.
+//
+// TODO: migrate from `DeviceTrait::name()` to the new `description()` /
+// `id()` API once we settle on which one we want surfaced to the UI
+// (description gives manufacturer + type; id is stable across reboots).
+// Tracked separately so this is a behavior change, not a CI cleanup.
+#[allow(deprecated)]
 pub fn list_outputs() -> Result<Vec<AudioOutputInfo>, AudioError> {
     let host = cpal::default_host();
     let default_name = host
@@ -114,7 +120,7 @@ pub fn list_outputs() -> Result<Vec<AudioOutputInfo>, AudioError> {
         }
     }
     // Move the default to the front so callers can pick `[0]` for "best guess".
-    out.sort_by(|a, b| b.is_default.cmp(&a.is_default));
+    out.sort_by_key(|info| std::cmp::Reverse(info.is_default));
     Ok(out)
 }
 
@@ -137,6 +143,7 @@ where
 }
 
 /// Open a named output device.
+#[allow(deprecated)]
 pub fn open_output<F>(
     device_name: &str,
     preferred_sample_rate: Option<u32>,
@@ -174,7 +181,9 @@ where
         .map_err(|e| AudioError::DeviceQuery(e.to_string()))?;
 
     if default_config.sample_format() != cpal::SampleFormat::F32 && supported.is_empty() {
-        return Err(AudioError::UnsupportedSampleFormat(default_config.sample_format()));
+        return Err(AudioError::UnsupportedSampleFormat(
+            default_config.sample_format(),
+        ));
     }
 
     // Choose the config: try to honour preferred_sample_rate, fall back to default.
@@ -183,7 +192,7 @@ where
         Some(want) => supported
             .iter()
             .find(|c| c.min_sample_rate() <= want && c.max_sample_rate() >= want)
-            .map(|c| c.clone().with_sample_rate(want).config())
+            .map(|c| (*c).with_sample_rate(want).config())
             .unwrap_or_else(|| default_config.config()),
         None => default_config.config(),
     };
@@ -206,5 +215,8 @@ where
     )?;
     stream.play()?;
 
-    Ok(AudioOutputHandle { _stream: stream, spec })
+    Ok(AudioOutputHandle {
+        _stream: stream,
+        spec,
+    })
 }

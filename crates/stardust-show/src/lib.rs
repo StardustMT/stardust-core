@@ -15,10 +15,8 @@ pub mod document;
 pub mod types;
 pub mod validate;
 
-pub use document::{ShowDocument, CURRENT_SCHEMA_VERSION, SHOW_KIND};
-pub use types::{
-    BlockId, Patch, PatchId, Rig, RigSource, SavedBlock, Show, Song, SongId,
-};
+pub use document::{CURRENT_SCHEMA_VERSION, SHOW_KIND, ShowDocument};
+pub use types::{BlockId, Patch, PatchId, Rig, RigSource, SavedBlock, Show, Song, SongId};
 pub use validate::ShowValidationError;
 
 // Re-exports from stardust-patch so consumers can depend on just stardust-show

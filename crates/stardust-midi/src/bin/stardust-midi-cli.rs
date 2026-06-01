@@ -9,7 +9,7 @@
 //! Cross-platform: works on macOS (CoreMIDI), Windows (WinMM), and Linux
 //! (ALSA). Plug in any MIDI device, pick its index, then play.
 
-use stardust_midi::{list_inputs, open_input, MidiMessage};
+use stardust_midi::{MidiMessage, list_inputs, open_input};
 use std::io::{self, BufRead, Write};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -57,14 +57,22 @@ fn prompt_index(max: usize) -> io::Result<usize> {
 
 fn print_event(msg: MidiMessage) {
     match msg {
-        MidiMessage::NoteOn { channel, note, velocity } => println!(
+        MidiMessage::NoteOn {
+            channel,
+            note,
+            velocity,
+        } => println!(
             "  note on   ch {:>2}  note {:>3} ({})  vel {:>3}",
             channel + 1,
             note,
             note_name(note),
             velocity
         ),
-        MidiMessage::NoteOff { channel, note, velocity } => println!(
+        MidiMessage::NoteOff {
+            channel,
+            note,
+            velocity,
+        } => println!(
             "  note off  ch {:>2}  note {:>3} ({})  vel {:>3}",
             channel + 1,
             note,
@@ -87,7 +95,11 @@ fn print_event(msg: MidiMessage) {
             channel + 1,
             value
         ),
-        MidiMessage::PolyAftertouch { channel, note, value } => println!(
+        MidiMessage::PolyAftertouch {
+            channel,
+            note,
+            value,
+        } => println!(
             "  poly at   ch {:>2}  note {:>3} ({})  val {:>3}",
             channel + 1,
             note,

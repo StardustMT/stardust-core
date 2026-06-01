@@ -42,8 +42,8 @@ use clack_extensions::note_ports::{
     NoteDialect, NoteDialects, NotePortInfo, NotePortInfoWriter, PluginNotePorts,
     PluginNotePortsImpl,
 };
-use clack_plugin::events::spaces::CoreEventSpace;
 use clack_plugin::events::Match;
+use clack_plugin::events::spaces::CoreEventSpace;
 use clack_plugin::prelude::*;
 
 use crate::engine::Engine;
@@ -181,7 +181,9 @@ impl<'a> PluginAudioProcessor<'a, SharedState, MainThread<'a>> for Processor<'a>
             .into_f32()
             .ok_or(PluginError::Message("Expected f32 output"))?;
         if channels.channel_count() < 2 {
-            return Err(PluginError::Message("Stardust SFZ requires a stereo output"));
+            return Err(PluginError::Message(
+                "Stardust SFZ requires a stereo output",
+            ));
         }
 
         // Determine the frame count from channel 0, then render the
@@ -239,8 +241,8 @@ impl<'a> PluginAudioProcessor<'a, SharedState, MainThread<'a>> for Processor<'a>
         // Deinterleave into host channels.
         for ch_idx in 0..channels.channel_count().min(2) {
             if let Some(ch) = channels.channel_mut(ch_idx) {
-                for i in 0..frames {
-                    ch[i] = self.scratch[i * 2 + ch_idx as usize];
+                for (i, sample) in ch[..frames].iter_mut().enumerate() {
+                    *sample = self.scratch[i * 2 + ch_idx as usize];
                 }
             }
         }
@@ -272,7 +274,8 @@ impl Processor<'_> {
                 }
                 if let (Match::Specific(channel), Match::Specific(key)) = (e.channel(), e.key()) {
                     let velocity = (e.velocity() * 127.0).clamp(0.0, 127.0) as u8;
-                    self.engine.note_on(channel as u8, key as u8, velocity.max(1));
+                    self.engine
+                        .note_on(channel as u8, key as u8, velocity.max(1));
                 }
             }
             Some(CoreEventSpace::NoteOff(e)) => {

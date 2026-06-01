@@ -40,9 +40,7 @@ pub enum ValidationError {
         port: PortId,
     },
 
-    #[error(
-        "wire {wire:?} connects mismatched signals: source is {from:?}, destination is {to:?}"
-    )]
+    #[error("wire {wire:?} connects mismatched signals: source is {from:?}, destination is {to:?}")]
     WireSignalMismatch {
         wire: WireId,
         from: SignalKind,
