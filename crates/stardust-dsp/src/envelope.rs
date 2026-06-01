@@ -105,8 +105,7 @@ impl Envelope {
             level: 0.0,
             sustain_level: config.sustain_level.clamp(0.0, 1.0),
             attack_per_sample: 1.0 / (sample_rate * attack),
-            decay_per_sample: (1.0 - config.sustain_level.clamp(0.0, 1.0))
-                / (sample_rate * decay),
+            decay_per_sample: (1.0 - config.sustain_level.clamp(0.0, 1.0)) / (sample_rate * decay),
             release_decrement: 0.0,
             release_secs: release,
             sample_rate,
@@ -127,8 +126,7 @@ impl Envelope {
         }
         // Compute decrement so the release takes `release_secs` from
         // the current level (not from sustain_level).
-        self.release_decrement =
-            (self.level.max(0.0001)) / (self.sample_rate * self.release_secs);
+        self.release_decrement = (self.level.max(0.0001)) / (self.sample_rate * self.release_secs);
         self.state = EnvState::Released;
     }
 
@@ -217,7 +215,10 @@ mod tests {
         );
         e.trigger();
         let first = e.tick();
-        assert!(first > 0.0 && first < 0.5, "first sample tiny but non-zero: {first}");
+        assert!(
+            first > 0.0 && first < 0.5,
+            "first sample tiny but non-zero: {first}"
+        );
         // After 10ms of 48kHz: ~480 samples, should be at sustain (1.0).
         for _ in 0..500 {
             e.tick();

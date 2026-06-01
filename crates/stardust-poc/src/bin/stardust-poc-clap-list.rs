@@ -82,8 +82,16 @@ fn main() -> Result<()> {
         }
         for d in &bundle.descriptors {
             total_plugins += 1;
-            let vendor = if d.vendor.is_empty() { "—" } else { &d.vendor };
-            let version = if d.version.is_empty() { "—" } else { &d.version };
+            let vendor = if d.vendor.is_empty() {
+                "—"
+            } else {
+                &d.vendor
+            };
+            let version = if d.version.is_empty() {
+                "—"
+            } else {
+                &d.version
+            };
             println!("    • {}  ({})", d.name, d.id);
             println!("         vendor: {}   version: {}", vendor, version);
             if !d.description.is_empty() {

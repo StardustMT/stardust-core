@@ -12,10 +12,8 @@ fn load(name: &str) -> ShowDocument {
         env!("CARGO_MANIFEST_DIR"),
         name
     );
-    let raw = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {path}: {e}"));
-    ShowDocument::from_json(&raw)
-        .unwrap_or_else(|e| panic!("parse {name}: {e}"))
+    let raw = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {path}: {e}"));
+    ShowDocument::from_json(&raw).unwrap_or_else(|e| panic!("parse {name}: {e}"))
 }
 
 fn assert_round_trip(name: &str) {
@@ -25,8 +23,8 @@ fn assert_round_trip(name: &str) {
         .unwrap_or_else(|errs| panic!("{name} did not validate: {errs:#?}"));
 
     let serialized = doc.to_json().expect("serialize");
-    let reparsed = ShowDocument::from_json(&serialized)
-        .unwrap_or_else(|e| panic!("re-parse {name}: {e}"));
+    let reparsed =
+        ShowDocument::from_json(&serialized).unwrap_or_else(|e| panic!("re-parse {name}: {e}"));
 
     assert_eq!(doc, reparsed, "round-trip changed the document for {name}");
 }

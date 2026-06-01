@@ -20,14 +20,14 @@
 //! Pick a MIDI input, then an audio output. Play your controller — the
 //! built-in sine synth responds with low-latency audio. Ctrl-C to exit.
 
-use anyhow::{anyhow, Result};
-use stardust_audio::{list_outputs, open_default_output, open_output, AudioSpec};
+use anyhow::{Result, anyhow};
+use stardust_audio::{AudioSpec, list_outputs, open_default_output, open_output};
 use stardust_dsp::Synth;
-use stardust_midi::{list_inputs, open_input, MidiMessage};
+use stardust_midi::{MidiMessage, list_inputs, open_input};
 use stardust_rt::RingBuffer;
 use std::io::{self, BufRead, Write};
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 /// Polyphony cap. Pre-allocated up front; never resized.
@@ -91,10 +91,10 @@ fn main() -> Result<()> {
         // else (Other, realtime) is dropped at the source so the audio
         // thread doesn't burn cycles ignoring them.
         match msg {
-            MidiMessage::NoteOn { .. } | MidiMessage::NoteOff { .. } => {
-                if producer.push(msg).is_err() {
-                    dropped_for_midi.fetch_add(1, Ordering::Relaxed);
-                }
+            MidiMessage::NoteOn { .. } | MidiMessage::NoteOff { .. }
+                if producer.push(msg).is_err() =>
+            {
+                dropped_for_midi.fetch_add(1, Ordering::Relaxed);
             }
             _ => {}
         }
@@ -137,10 +137,7 @@ fn main() -> Result<()> {
     // ---------------------------------------------------------------
     println!(
         "\n✓ MIDI:  {}\n✓ Audio: {} @ {} Hz, {} ch\n",
-        midi_info.name,
-        audio_info.name,
-        audio_handle.spec.sample_rate,
-        audio_handle.spec.channels
+        midi_info.name, audio_info.name, audio_handle.spec.sample_rate, audio_handle.spec.channels
     );
     println!("Play your controller. Ctrl-C to exit.\n");
 

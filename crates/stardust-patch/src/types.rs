@@ -102,9 +102,13 @@ pub enum PortConfig {
         note: Option<u8>,
     },
     #[serde(rename_all = "camelCase")]
-    Channel { midi_channel: u8 },
+    Channel {
+        midi_channel: u8,
+    },
     #[serde(rename_all = "camelCase")]
-    Stereo { channel: StereoChannel },
+    Stereo {
+        channel: StereoChannel,
+    },
     Mono,
 }
 
@@ -176,8 +180,14 @@ impl NodeKind {
     pub fn class(self) -> NodeClass {
         use NodeKind::*;
         match self {
-            SourceKeyboard | SourcePads | SourceSwitch | SourceSustainPedal
-            | SourceExpressionPedal | SourcePitchWheel | SourceModWheel | SourceKnob
+            SourceKeyboard
+            | SourcePads
+            | SourceSwitch
+            | SourceSustainPedal
+            | SourceExpressionPedal
+            | SourcePitchWheel
+            | SourceModWheel
+            | SourceKnob
             | SourceFader => NodeClass::Source,
             MidiTranspose | MidiMix => NodeClass::MidiProcessor,
             InstrumentPlugin | InstrumentSine => NodeClass::Instrument,

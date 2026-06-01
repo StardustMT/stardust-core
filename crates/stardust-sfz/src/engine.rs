@@ -145,8 +145,8 @@ impl Engine {
 
         let sample = &self.instrument.samples[region.sample_index];
         let sr_ratio = sample.sample_rate as f64 / self.sample_rate as f64;
-        let pitch_semis =
-            (key as f32 - region.region.pitch_keycenter as f32) + region.region.pitch_offset_semitones();
+        let pitch_semis = (key as f32 - region.region.pitch_keycenter as f32)
+            + region.region.pitch_offset_semitones();
         let pitch_mult = 2.0f64.powf(pitch_semis as f64 / 12.0);
         let base_increment = sr_ratio * pitch_mult;
 
@@ -318,12 +318,7 @@ impl Engine {
     }
 
     fn pick_voice(&self) -> usize {
-        if let Some((i, _)) = self
-            .voices
-            .iter()
-            .enumerate()
-            .find(|(_, v)| !v.is_active())
-        {
+        if let Some((i, _)) = self.voices.iter().enumerate().find(|(_, v)| !v.is_active()) {
             return i;
         }
         if let Some((i, _)) = self
@@ -345,10 +340,7 @@ impl Engine {
 
 /// Resolve loop start/end for a region, defaulting `loop_end == 0` to
 /// the end of the sample.
-fn loop_bounds(
-    region: &crate::instrument::InstrumentRegion,
-    total_frames: usize,
-) -> (f64, u64) {
+fn loop_bounds(region: &crate::instrument::InstrumentRegion, total_frames: usize) -> (f64, u64) {
     let start = region.region.loop_start as f64;
     let end = if region.region.loop_end == 0 {
         total_frames as u64
@@ -492,9 +484,21 @@ mod tests {
         e.note_on(0, 60, 127);
         let mut buf = vec![0.0f32; 500 * 2];
         e.render_into_stereo(&mut buf);
-        let max_left = buf.iter().step_by(2).map(|s| s.abs()).fold(0.0f32, f32::max);
-        let max_right = buf.iter().skip(1).step_by(2).map(|s| s.abs()).fold(0.0f32, f32::max);
+        let max_left = buf
+            .iter()
+            .step_by(2)
+            .map(|s| s.abs())
+            .fold(0.0f32, f32::max);
+        let max_right = buf
+            .iter()
+            .skip(1)
+            .step_by(2)
+            .map(|s| s.abs())
+            .fold(0.0f32, f32::max);
         assert!(max_left > 0.05, "left channel should be audible");
-        assert!(max_right < max_left * 0.05, "right should be near-silent (got {max_right})");
+        assert!(
+            max_right < max_left * 0.05,
+            "right should be near-silent (got {max_right})"
+        );
     }
 }
