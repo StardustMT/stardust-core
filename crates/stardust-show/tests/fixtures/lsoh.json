@@ -1,6 +1,6 @@
 {
   "kind": "stardust.show",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "show": {
     "name": "Little Shop of Horrors",
     "rig": {
@@ -36,7 +36,7 @@
                 },
                 {
                   "id": "n2",
-                  "kind": "instrument.sine",
+                  "kind": "instrument.testtone",
                   "name": "Sine synth",
                   "x": 420,
                   "y": 220,
@@ -124,7 +124,7 @@
                 },
                 {
                   "id": "n2",
-                  "kind": "instrument.sine",
+                  "kind": "instrument.testtone",
                   "name": "Sine bass",
                   "x": 420,
                   "y": 220,

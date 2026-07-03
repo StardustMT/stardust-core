@@ -1,6 +1,6 @@
 {
   "kind": "stardust.patch",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "graph": {
     "nodes": [
       {
@@ -15,7 +15,7 @@
       },
       {
         "id": "n2",
-        "kind": "instrument.sine",
+        "kind": "instrument.testtone",
         "name": "Sine synth",
         "x": 420,
         "y": 220,
