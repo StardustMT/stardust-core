@@ -38,7 +38,7 @@ fn lsoh_round_trips() {
 fn header_is_well_formed() {
     let doc = load("lsoh");
     assert_eq!(doc.header.kind, "stardust.show");
-    assert_eq!(doc.header.schema_version, 1);
+    assert_eq!(doc.header.schema_version, 2);
 }
 
 #[test]

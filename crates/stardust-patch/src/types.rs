@@ -154,8 +154,11 @@ pub enum NodeKind {
     // instruments
     #[serde(rename = "instrument.plugin")]
     InstrumentPlugin,
-    #[serde(rename = "instrument.sine")]
-    InstrumentSine,
+    /// Diagnostic-only built-in tone generator. Not surfaced in the
+    /// user-facing palette; the engine self-test (Settings) instantiates
+    /// it transparently. Renamed from `instrument.sine` in schema v2.
+    #[serde(rename = "instrument.testtone")]
+    InstrumentTestTone,
     // audio effects
     #[serde(rename = "audio.eq")]
     AudioEq,
@@ -190,7 +193,7 @@ impl NodeKind {
             | SourceKnob
             | SourceFader => NodeClass::Source,
             MidiTranspose | MidiMix => NodeClass::MidiProcessor,
-            InstrumentPlugin | InstrumentSine => NodeClass::Instrument,
+            InstrumentPlugin | InstrumentTestTone => NodeClass::Instrument,
             AudioEq | AudioMix => NodeClass::AudioEffect,
             SinkMainOut => NodeClass::Sink,
         }
