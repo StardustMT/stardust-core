@@ -55,6 +55,11 @@ pub enum MidiError {
 pub struct MidiInputInfo {
     /// OS-reported device name. Use as the key when opening.
     pub name: String,
+    /// Opaque, platform-specific port identifier from midir
+    /// (CoreMIDI unique ID on macOS, `client:port` on ALSA, port name
+    /// on WinMM). More stable across replug than the display name on
+    /// macOS; treat it as an opaque token, never parse it.
+    pub id: String,
 }
 
 /// A timestamped MIDI message, sized for `Copy` so it's cheap to move
@@ -221,7 +226,8 @@ pub fn list_inputs() -> Result<Vec<MidiInputInfo>, MidiError> {
         let name = mi
             .port_name(&port)
             .unwrap_or_else(|_| "<unknown>".to_string());
-        out.push(MidiInputInfo { name });
+        let id = port.id();
+        out.push(MidiInputInfo { name, id });
     }
     Ok(out)
 }
