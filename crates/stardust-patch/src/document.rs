@@ -11,7 +11,7 @@ use thiserror::Error;
 use crate::types::PatchGraph;
 
 pub const PATCH_KIND: &str = "stardust.patch";
-pub const CURRENT_SCHEMA_VERSION: u32 = 2;
+pub const CURRENT_SCHEMA_VERSION: u32 = 3;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -95,13 +95,8 @@ impl PatchDocument {
 /// Exposed at crate level so `stardust-show` can reuse the per-graph
 /// rewrites when migrating embedded patch graphs.
 pub fn migrate_patch_value(value: &mut Value, from_version: u32) {
-    let mut v = from_version;
-    while v < CURRENT_SCHEMA_VERSION {
-        match v {
-            1 => migrate_patch_v1_to_v2(value),
-            _ => break,
-        }
-        v += 1;
+    if let Some(graph) = value.get_mut("graph") {
+        migrate_graph_value(graph, from_version, CURRENT_SCHEMA_VERSION);
     }
     if let Some(obj) = value.as_object_mut() {
         obj.insert(
@@ -111,19 +106,28 @@ pub fn migrate_patch_value(value: &mut Value, from_version: u32) {
     }
 }
 
-/// v1 → v2: rename the built-in synth node kind from `instrument.sine` to
-/// `instrument.testtone`. The node is no longer user-facing as of v0.6.0;
-/// it survives as a diagnostic surface only.
-fn migrate_patch_v1_to_v2(value: &mut Value) {
-    if let Some(graph) = value.get_mut("graph") {
-        migrate_graph_v1_to_v2(graph);
+/// Run the per-graph rewrites for schema steps `from_version` up to (but
+/// not past) `to_version`. Public so `stardust-show` can apply exactly the
+/// steps its own migration chain needs on embedded patch graphs — the show
+/// v2→v3 migration harvests node-level `hardwareBinding` blobs itself, so
+/// it must be able to run the graph 1→2 step *without* the 2→3 blob
+/// removal firing first.
+pub fn migrate_graph_value(graph: &mut Value, from_version: u32, to_version: u32) {
+    let mut v = from_version;
+    while v < to_version {
+        match v {
+            1 => migrate_graph_v1_to_v2(graph),
+            2 => migrate_graph_v2_to_v3(graph),
+            _ => break,
+        }
+        v += 1;
     }
 }
 
-/// Per-graph node-kind rewrite. Public to the crate so the show document
-/// migration can walk its embedded patch graphs without duplicating the
-/// rule.
-pub(crate) fn migrate_graph_v1_to_v2(graph: &mut Value) {
+/// v1 → v2: rename the built-in synth node kind from `instrument.sine` to
+/// `instrument.testtone`. The node is no longer user-facing as of v0.6.0;
+/// it survives as a diagnostic surface only.
+fn migrate_graph_v1_to_v2(graph: &mut Value) {
     let Some(nodes) = graph.get_mut("nodes").and_then(Value::as_array_mut) else {
         return;
     };
@@ -133,6 +137,29 @@ pub(crate) fn migrate_graph_v1_to_v2(graph: &mut Value) {
         };
         if kind.as_str() == Some("instrument.sine") {
             *kind = Value::from("instrument.testtone");
+        }
+    }
+}
+
+/// v2 → v3: node-level `hardwareBinding` ceases to exist — hardware
+/// identity lives on rig components (`stardust-show` schema v3), which
+/// source nodes reference via `config.rigComponentId`. A standalone patch
+/// document has no rig to attach bindings to, so the blob is dropped here;
+/// the show migration converts blobs into rig components *before* this
+/// step would discard them.
+fn migrate_graph_v2_to_v3(graph: &mut Value) {
+    let Some(nodes) = graph.get_mut("nodes").and_then(Value::as_array_mut) else {
+        return;
+    };
+    for node in nodes {
+        let Some(config) = node.get_mut("config").and_then(Value::as_object_mut) else {
+            continue;
+        };
+        config.remove("hardwareBinding");
+        if config.is_empty() {
+            node.as_object_mut()
+                .expect("node with config is an object")
+                .remove("config");
         }
     }
 }

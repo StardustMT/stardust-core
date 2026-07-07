@@ -121,7 +121,7 @@ impl From<PluginEntryError> for ClapError {
 /// `Option`. The `id` and `name` fields are mandatory per the CLAP spec —
 /// bundles missing either are skipped at scan time and won't appear in
 /// the returned list.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct PluginDescriptor {
     /// Globally unique identifier (e.g. `com.u-he.diva`). Required.
     pub id: String,
@@ -249,11 +249,41 @@ const MAX_SCAN_DEPTH: usize = 4;
 /// guard against pathological loops.
 pub fn scan_dir(dir: &Path) -> ScanResult {
     let mut result = ScanResult::default();
-    scan_dir_recursive(dir, 0, &mut result);
+    for path in discover_dir(dir) {
+        match load_bundle(&path) {
+            Ok(b) => result.bundles.push(b),
+            Err(e) => result.errors.push((path, format!("{e}"))),
+        }
+    }
     result
 }
 
-fn scan_dir_recursive(dir: &Path, depth: usize, result: &mut ScanResult) {
+/// Walk one directory for `.clap` bundle paths **without loading them** —
+/// the discovery half of [`scan_dir`]. The mtime-keyed cache
+/// ([`crate::cache`]) uses this to decide which bundles actually need a
+/// `dlopen`.
+pub fn discover_dir(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    discover_dir_recursive(dir, 0, &mut out);
+    out
+}
+
+/// Walk multiple directories for `.clap` bundle paths, deduped by path
+/// equality (first hit wins), matching [`scan_paths`]' dedup rule.
+pub fn discover_paths<P: AsRef<Path>>(dirs: &[P]) -> Vec<PathBuf> {
+    let mut seen = std::collections::HashSet::<PathBuf>::new();
+    let mut out = Vec::new();
+    for dir in dirs {
+        for p in discover_dir(dir.as_ref()) {
+            if seen.insert(p.clone()) {
+                out.push(p);
+            }
+        }
+    }
+    out
+}
+
+fn discover_dir_recursive(dir: &Path, depth: usize, out: &mut Vec<PathBuf>) {
     if depth > MAX_SCAN_DEPTH {
         return;
     }
@@ -269,13 +299,9 @@ fn scan_dir_recursive(dir: &Path, depth: usize, result: &mut ScanResult) {
             .map(|s| s.eq_ignore_ascii_case("clap"))
             .unwrap_or(false);
         if is_clap {
-            // Terminal: load the bundle (works for .clap files on
-            // Linux/Windows and .clap bundle dirs on macOS — clack-host
-            // handles both).
-            match load_bundle(&path) {
-                Ok(b) => result.bundles.push(b),
-                Err(e) => result.errors.push((path, format!("{e}"))),
-            }
+            // Terminal: a .clap file on Linux/Windows or a .clap bundle
+            // dir on macOS — either way, don't descend into it.
+            out.push(path);
             continue;
         }
         // Recurse into regular subdirectories (vendor folders etc.).
@@ -284,7 +310,7 @@ fn scan_dir_recursive(dir: &Path, depth: usize, result: &mut ScanResult) {
             .map(|t| t.is_dir() || t.is_symlink())
             .unwrap_or(false);
         if is_dir {
-            scan_dir_recursive(&path, depth + 1, result);
+            discover_dir_recursive(&path, depth + 1, out);
         }
     }
 }

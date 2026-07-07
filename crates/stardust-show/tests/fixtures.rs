@@ -38,7 +38,7 @@ fn lsoh_round_trips() {
 fn header_is_well_formed() {
     let doc = load("lsoh");
     assert_eq!(doc.header.kind, "stardust.show");
-    assert_eq!(doc.header.schema_version, 2);
+    assert_eq!(doc.header.schema_version, 3);
 }
 
 #[test]
@@ -47,7 +47,7 @@ fn show_contents_parse_correctly() {
     assert_eq!(doc.show.name, "Little Shop of Horrors");
     assert_eq!(doc.show.songs.len(), 2);
     assert_eq!(doc.show.songs[0].patches.len(), 2);
-    assert_eq!(doc.show.rig.sources.len(), 5);
+    assert_eq!(doc.show.rig.components.len(), 5);
     // Embedded graph is reachable.
     assert_eq!(doc.show.songs[0].patches[0].graph.nodes.len(), 3);
 }

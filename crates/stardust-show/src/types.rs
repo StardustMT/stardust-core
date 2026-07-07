@@ -51,27 +51,46 @@ macro_rules! string_id {
 string_id!(SongId);
 string_id!(PatchId);
 string_id!(BlockId);
+string_id!(RigComponentId);
 
 // -----------------------------------------------------------------------------
 // Rig
 // -----------------------------------------------------------------------------
 
-/// One physical input the user has configured in their rig. The `kind` maps
-/// to a `source.*` `NodeKind`; the `label` is the user's friendly name
-/// ("Nord Stage 3 keys"). Two rig sources of the same kind with different
-/// labels is valid — someone with two keyboards has two `source.keyboard`
+/// One physical component of the user's rig — a keyboard, a pedal, a bank
+/// of pads. The `kind` maps to a `source.*` `NodeKind`; `name` is the
+/// user's friendly label ("Nord Stage 3 keys"). Two components of the same
+/// kind is valid — someone with two keyboards has two `source.keyboard`
 /// entries.
+///
+/// Since schema v3 the component owns hardware identity: a patch source
+/// node references a component via `config.rigComponentId` and inherits
+/// its device binding. Node-level `hardwareBinding` no longer exists.
+///
+/// Per ADR-0004 the kind-specific configuration (device binding, learned
+/// key range, pad note assignments, captured CC source, …) lives in the
+/// free-form `config` bag; the engine owns the strong typing. The config
+/// vocabulary is documented in `docs/schemas/CHANGELOG.md`.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RigSource {
+pub struct RigComponent {
+    pub id: RigComponentId,
     pub kind: NodeKind,
-    pub label: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub config: Option<serde_json::Value>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Rig {
-    pub sources: Vec<RigSource>,
+    pub components: Vec<RigComponent>,
+}
+
+impl Rig {
+    pub fn find_component(&self, id: &RigComponentId) -> Option<&RigComponent> {
+        self.components.iter().find(|c| &c.id == id)
+    }
 }
 
 // -----------------------------------------------------------------------------
