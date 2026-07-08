@@ -21,6 +21,8 @@ clap = ["dep:clack-host"]
 
 [dependencies]
 clack-host = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 stardust-rt.workspace = true

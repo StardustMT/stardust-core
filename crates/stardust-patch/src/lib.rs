@@ -11,7 +11,8 @@ pub mod types;
 pub mod validate;
 
 pub use document::{
-    CURRENT_SCHEMA_VERSION, Header, PATCH_KIND, PatchDocument, migrate_patch_value,
+    CURRENT_SCHEMA_VERSION, Header, PATCH_KIND, PatchDocument, migrate_graph_value,
+    migrate_patch_value,
 };
 pub use types::{
     CompositeBlock, CompositeId, GraphNode, NodeClass, NodeId, NodeKind, PatchGraph, Port,

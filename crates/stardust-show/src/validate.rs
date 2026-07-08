@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use stardust_patch::ValidationError as GraphError;
 
-use crate::types::{BlockId, PatchId, Show, SongId};
+use crate::types::{BlockId, PatchId, RigComponentId, Show, SongId};
 
 #[derive(Clone, Debug, PartialEq, Error, Serialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
@@ -27,6 +27,9 @@ pub enum ShowValidationError {
 
     #[error("duplicate saved-block id {0:?}")]
     DuplicateBlockId(BlockId),
+
+    #[error("duplicate rig-component id {0:?}")]
+    DuplicateRigComponentId(RigComponentId),
 
     #[error("patch {patch:?} (in song {song:?}) has structural errors")]
     PatchInvalid {
@@ -66,6 +69,19 @@ impl Show {
                 }
             }
         }
+
+        let mut seen_component = HashSet::new();
+        for component in &self.rig.components {
+            if !seen_component.insert(&component.id) {
+                errors.push(ShowValidationError::DuplicateRigComponentId(
+                    component.id.clone(),
+                ));
+            }
+        }
+
+        // A dangling `rigComponentId` on a source node is deliberately NOT
+        // a validation error: deleting a component must never make a show
+        // unloadable. The node behaves as unassigned (silent + flagged).
 
         let mut seen_block = HashSet::new();
         for block in &self.saved_blocks {

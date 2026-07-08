@@ -53,5 +53,5 @@ fn composite_block_round_trips() {
 fn header_is_well_formed() {
     let doc = load("casual");
     assert_eq!(doc.header.kind, "stardust.patch");
-    assert_eq!(doc.header.schema_version, 2);
+    assert_eq!(doc.header.schema_version, 3);
 }

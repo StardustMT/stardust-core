@@ -1109,6 +1109,8 @@ version = "0.0.1"
 dependencies = [
  "cc",
  "clack-host",
+ "serde",
+ "serde_json",
  "stardust-rt",
  "thiserror 2.0.18",
  "tracing",

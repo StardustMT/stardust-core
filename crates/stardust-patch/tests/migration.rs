@@ -66,6 +66,39 @@ fn v1_sine_node_migrates_to_testtone() {
     );
 }
 
+/// v2 doc with a node-level `hardwareBinding` blob (removed in v3 —
+/// hardware identity lives on rig components in the show document).
+const V2_DOC_WITH_BINDING: &str = r#"{
+  "kind": "stardust.patch",
+  "schemaVersion": 2,
+  "graph": {
+    "nodes": [
+      {
+        "id": "n1",
+        "kind": "source.keyboard",
+        "name": "kbd",
+        "x": 0, "y": 0,
+        "ports": [
+          { "id": "out", "label": "MIDI out", "signal": "midi", "direction": "out" }
+        ],
+        "config": {
+          "hardwareBinding": { "deviceId": "1234", "deviceName": "Test Keys", "channel": 1 }
+        }
+      }
+    ],
+    "wires": [],
+    "composites": []
+  }
+}"#;
+
+#[test]
+fn v2_hardware_binding_is_removed() {
+    let doc = PatchDocument::from_json(V2_DOC_WITH_BINDING).expect("v2 doc loads");
+    assert_eq!(doc.header.schema_version, CURRENT_SCHEMA_VERSION);
+    // The blob is gone and the now-empty config bag with it.
+    assert_eq!(doc.graph.nodes[0].config, None);
+}
+
 #[test]
 fn newer_schema_is_rejected() {
     let raw = V1_DOC_WITH_SINE.replace("\"schemaVersion\": 1", "\"schemaVersion\": 999");

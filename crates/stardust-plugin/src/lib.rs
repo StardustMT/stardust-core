@@ -40,4 +40,6 @@
 #![warn(missing_docs)]
 
 #[cfg(feature = "clap")]
+pub mod cache;
+#[cfg(feature = "clap")]
 pub mod clap;
